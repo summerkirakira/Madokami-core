@@ -4,11 +4,12 @@ from madokami.plugin.backend.engine import Engine
 from madokami.plugin.backend.requester import Requester
 from madokami.plugin import register_engine
 from madokami.models import Plugin
+from madokami.log import logger
 
 
 class TestEngine(Engine):
     def run(self):
-        pass
+        logger.info('Test engine is running')
 
     def cancel(self):
         pass

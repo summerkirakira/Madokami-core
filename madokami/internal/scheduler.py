@@ -4,12 +4,14 @@ from ..drivers import app
 from ..plugin.backend.engine import Engine
 import uuid
 from typing import Dict, Callable
+from ..db import engine
+from sqlmodel import Session
+from ..models import EngineSchedulerConfig
 
 
 class MadokamiScheduler:
     def __init__(self):
         self.scheduler = BackgroundScheduler()
-        self.scheduler.start()
         self._job_id_dict: Dict[str, Callable] = {}
         self._engine_id_dict: Dict[str, Engine] = {}
 
@@ -51,6 +53,9 @@ class MadokamiScheduler:
     def get_running_engine_by_namespace(self, namespace: str) -> Dict[str, Engine]:
         result = {k: v for k, v in self._engine_id_dict.items() if v.namespace == namespace}
         return result
+
+    def start(self):
+        self.scheduler.start()
 
 
 scheduler = MadokamiScheduler()

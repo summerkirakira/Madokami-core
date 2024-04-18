@@ -6,8 +6,7 @@ from sqlmodel import Session, select, delete
 
 
 def test_init_db():
-    with Session(engine) as session:
-        init_db(session)
+    init_db()
 
 
 def test_create_user():

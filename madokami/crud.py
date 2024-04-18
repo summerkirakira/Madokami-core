@@ -1,12 +1,12 @@
-from .models import User, PluginConfig, Plugin, Oauth2Client
+from .models import User, PluginConfig, Plugin, Oauth2Client, EngineSchedulerConfig
 from sqlmodel import Session, create_engine, select, SQLModel, delete
 from typing import Optional
 
 
 def create_user(*, session: Session, user: User) -> User:
 
-    user = session.exec(select(User).where(User.username == user.username)).first()
-    if user:
+    old_user = session.exec(select(User).where(User.username == user.username)).first()
+    if old_user:
         raise ValueError("User already exists")
 
     session.add(user)
@@ -86,5 +86,13 @@ def get_oauth2_client(*, session: Session, token: str) -> Optional[Oauth2Client]
     oauth2_client = session.exec(select(Oauth2Client).where(Oauth2Client.client_secret == token)).first()
     if oauth2_client:
         return oauth2_client
+    else:
+        return None
+
+
+def get_engine_scheduler_config(*, session: Session, namespace: str) -> Optional[EngineSchedulerConfig]:
+    engine_scheduler_config = session.exec(select(EngineSchedulerConfig).where(EngineSchedulerConfig.namespace == namespace)).first()
+    if engine_scheduler_config:
+        return engine_scheduler_config
     else:
         return None

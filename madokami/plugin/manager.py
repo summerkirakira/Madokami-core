@@ -90,5 +90,11 @@ class PluginManager:
                 self.registered_engines[plugin_engine.namespace] = plugin_engine
         self.plugin_names_from_db = load_plugin_names_from_db()
 
+    def get_active_plugins(self) -> list[PluginInfo]:
+        return [plugin for plugin in self.plugin_names_from_db if plugin.is_active]
+
+    def get_engine_by_namespace(self, namespace: str) -> Engine:
+        return self.registered_engines[namespace]
+
 
 plugin_manager = PluginManager()

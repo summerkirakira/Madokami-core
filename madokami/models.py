@@ -21,6 +21,7 @@ class Plugin(SQLModel, table=True):
     name: str = Field()
     description: str = Field()
     is_active: bool = Field()
+    cron: str = Field(default="* * * 31 2")
 
 
 class Oauth2Client(SQLModel, table=True):
@@ -32,5 +33,6 @@ class Oauth2Client(SQLModel, table=True):
 
 class EngineSchedulerConfig(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
-    key: str = Field(unique=True)
-    value: str = Field()
+    namespace: str = Field(unique=True)
+    cron_str: str = Field()
+

@@ -10,7 +10,7 @@ DEFAULT_SUPERUSER_NAME = "root"
 DEFAULT_SUPERUSER_PASSWORD = "123456"
 
 
-def init_db(session: Session) -> None:
+def init_db() -> None:
 
     SQLModel.metadata.create_all(engine)
 
@@ -25,3 +25,4 @@ def init_db(session: Session) -> None:
                 is_superuser=True,
             )
             create_user(session=session, user=user)
+
