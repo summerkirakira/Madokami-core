@@ -17,6 +17,7 @@ sqlmodel = "^0.0.16"
 pytest = "^8.1.1"
 requests = "^2.31.0"
 apscheduler = "^3.10.4"
+pytest-xdist = "^3.5.0"
 
 
 [build-system]

@@ -5,7 +5,7 @@ from typing import Tuple, Any
 
 class Engine(BasicPlugin):
     @abstractmethod
-    def run(self):
+    def run(self) -> Any:
         pass
 
     @abstractmethod

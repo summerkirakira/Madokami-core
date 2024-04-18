@@ -7,6 +7,7 @@ from typing import Dict, Callable
 from ..db import engine
 from sqlmodel import Session
 from ..models import EngineSchedulerConfig
+from ..plugin import plugin_hooks
 
 
 class MadokamiScheduler:
@@ -31,7 +32,16 @@ class MadokamiScheduler:
     def add_engine(self, engine: Engine, trigger) -> str:
         engine_id = str(uuid.uuid4())
         self._engine_id_dict[engine_id] = engine
-        self.scheduler.add_job(engine.run, trigger, id=engine_id)
+
+        def new_job():
+            result = engine.run()
+            for hook in plugin_hooks.get_after_run_hooks():
+                hook(engine, result)
+
+        for hook in plugin_hooks.get_before_run_hooks():
+            hook(engine)
+
+        self.scheduler.add_job(new_job, trigger, id=engine_id)
         return engine_id
 
     def remove_engine(self, engine_id) -> Engine:

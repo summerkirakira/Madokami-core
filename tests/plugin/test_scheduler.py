@@ -7,6 +7,8 @@ from madokami.db import engine
 import shutil
 from pathlib import Path
 from apscheduler.triggers.cron import CronTrigger
+from madokami.plugin import plugin_hooks
+from madokami.plugin.backend.engine import Engine
 
 
 def init_plugins():
@@ -32,11 +34,19 @@ def test_scheduler():
     assert len(reloaded_manager.registered_engines) == 1
     assert reloaded_manager.registered_engines["summerkirakira.test_engine"] is not None
 
+    @plugin_hooks.before_run
+    def before_run(engine: Engine):
+        assert engine.namespace == "summerkirakira.test_engine"
+
+    @plugin_hooks.after_run
+    def after_run(engine: Engine, result):
+        assert result is None
+        assert engine.namespace == "summerkirakira.test_engine"
+
+
     for plugin in reloaded_manager.get_active_plugins():
         scheduler.add_engine(reloaded_manager.get_engine_by_namespace(plugin.namespace), CronTrigger.from_crontab("* * * * *"))
     scheduler.start()
 
     assert len(scheduler.scheduler.get_jobs()) == 1
-    job = scheduler.scheduler.get_jobs()[0]
-    assert job.func == reloaded_manager.get_engine_by_namespace(reloaded_manager.get_active_plugins()[0].namespace).run
 
