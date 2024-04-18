@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 from pydantic.networks import IPvAnyAddress
-from typing import Any, Optional
+from typing import Any, Optional, Literal
 from pathlib import Path
 from .util import load_yaml
 
@@ -11,17 +11,17 @@ class BaseSettings(BaseModel):
 
 class MadokamiBasicConfig(BaseSettings):
     env_file: str = ".env"
-    mode = "production"
+    mode: Literal["product", "dev"] = "product"
     host: IPvAnyAddress = IPvAnyAddress("127.0.0.1")
     port: int = 8000
     debug: bool = False
-    sqlite_path: str = "./data/madokami.db"
+    sqlite_uri: str = "./data/madokami.db"
 
     def __init__(self, **kwargs: Any):
         super().__init__(**kwargs)
         self.load_env_file()
-        if not self.sqlite_path.startswith("sqlite"):
-            self.sqlite_path = f"sqlite:///{self.sqlite_path}"
+        if not self.sqlite_uri.startswith("sqlite"):
+            self.sqlite_uri = f"sqlite:///{self.sqlite_uri}"
 
     def load_env_file(self) -> None:
         env_file = Path.cwd() / self.env_file
@@ -34,3 +34,6 @@ class MadokamiBasicConfig(BaseSettings):
 class MadokamiConfig(MadokamiBasicConfig):
     username: str
     password: str
+
+
+basic_config = MadokamiBasicConfig()
