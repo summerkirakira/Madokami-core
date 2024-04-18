@@ -40,6 +40,14 @@ def get_plugins(*, session: Session) -> list[Plugin]:
     return [plugin for plugin in plugins]
 
 
+def get_plugin_by_namespace(*, session: Session, namespace: str) -> Optional[Plugin]:
+    plugin = session.exec(select(Plugin).where(Plugin.namespace == namespace)).first()
+    if plugin:
+        return plugin
+    else:
+        return None
+
+
 def add_plugin(*, session: Session, plugin: Plugin) -> Plugin:
     old_plugin = session.exec(select(Plugin).where(Plugin.namespace == plugin.namespace)).first()
     if old_plugin:

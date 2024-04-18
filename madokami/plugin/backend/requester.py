@@ -4,7 +4,7 @@ from ..basic_plugin import BasicPlugin
 
 class Requester(BasicPlugin):
     @abstractmethod
-    def request(self, url: str, **kwargs) -> bytes:
+    def request(self, data):
         pass
 
     @abstractmethod

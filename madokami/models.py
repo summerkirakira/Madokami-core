@@ -28,3 +28,9 @@ class Oauth2Client(SQLModel, table=True):
     client_id: str = Field(unique=True)
     client_secret: str = Field()
     expires_at: int = Field()
+
+
+class EngineSchedulerConfig(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    key: str = Field(unique=True)
+    value: str = Field()
