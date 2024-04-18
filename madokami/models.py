@@ -21,3 +21,10 @@ class Plugin(SQLModel, table=True):
     name: str = Field()
     description: str = Field()
     is_active: bool = Field()
+
+
+class Oauth2Client(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    client_id: str = Field(unique=True)
+    client_secret: str = Field()
+    expires_at: int = Field()

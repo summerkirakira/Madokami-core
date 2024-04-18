@@ -1,4 +1,4 @@
-from .models import User, PluginConfig, Plugin
+from .models import User, PluginConfig, Plugin, Oauth2Client
 from sqlmodel import Session, create_engine, select, SQLModel, delete
 from typing import Optional
 
@@ -73,3 +73,10 @@ def deactivate_plugin(*, session: Session, namespace: str) -> Plugin:
     else:
         raise ValueError("Plugin not found")
 
+
+def get_oauth2_client(*, session: Session, token: str) -> Optional[Oauth2Client]:
+    oauth2_client = session.exec(select(Oauth2Client).where(Oauth2Client.client_secret == token)).first()
+    if oauth2_client:
+        return oauth2_client
+    else:
+        return None
