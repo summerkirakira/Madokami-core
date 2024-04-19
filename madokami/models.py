@@ -21,6 +21,8 @@ class Plugin(SQLModel, table=True):
     namespace: str = Field(unique=True)
     name: str = Field()
     description: str = Field()
+    is_internal: bool = Field(default=False)
+    is_local_plugin: bool = Field(default=False)
     is_active: bool = Field()
 
 
@@ -42,3 +44,4 @@ class PluginInfo(BaseModel):
     name: str
     namespace: str
     description: str
+    is_local_plugin: bool = False

@@ -64,3 +64,10 @@ logger_id = logger.add(
     format=default_format,
 )
 """默认日志处理器 id"""
+
+logger.add(
+    "data/logs/{time:YYYY-MM-DD}.log",
+    level=0,
+    rotation="10 MB",
+    compression="zip"
+)

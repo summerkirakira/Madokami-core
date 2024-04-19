@@ -78,6 +78,7 @@ class PluginManager:
         for module in self._get_local_plugins():
             try:
                 importlib.import_module(f"{LOCAL_PLUGIN_PACKAGE_PREFIX}.{module.name}")
+                logger.info(f"Loaded local plugin {module.name}")
             except Exception as e:
                 logger.error(f"Failed to load plugin {module.name}: {e}")
 
@@ -87,12 +88,15 @@ class PluginManager:
                 continue
             if not plugin.is_active:
                 continue
+            if plugin.is_local_plugin:
+                continue
             try:
                 if '.' in plugin.namespace:
                     package_name = plugin.namespace.split('.')[-1]
                 else:
                     package_name = plugin.namespace
                 importlib.import_module(package_name)
+                logger.info(f"Loaded package plugin {plugin.namespace}")
             except Exception as e:
                 logger.error(f"Failed to load plugin {plugin.namespace}: {e}")
 
@@ -107,6 +111,7 @@ class PluginManager:
                         name=registered_plugin.name,
                         namespace=registered_plugin.namespace,
                         description=registered_plugin.description,
+                        is_local_plugin=registered_plugin.is_local_plugin,
                         is_active=True)
                     # logger.info(f"Adding plugin {plugin_name} to database")
                     add_plugin(session=session, plugin=plugin_info)

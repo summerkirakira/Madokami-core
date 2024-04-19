@@ -23,31 +23,31 @@ def pre_start():
 class Launcher:
     def __init__(self):
         pre_start()
-        self._plugin_manager = PluginManager()
-        self._scheduler = MadokamiScheduler()
-        self._app = get_fastapi_app()
-        self.add_app_routers()
+        self.plugin_manager = PluginManager()
+        self.scheduler = MadokamiScheduler()
+        self.app = get_fastapi_app()
+        self.addapp_routers()
 
     def add_background_jobs(self):
-        for plugin in self._plugin_manager.get_active_plugins():
+        for plugin in self.plugin_manager.get_active_plugins():
             with Session(engine) as session:
                 engines = get_engines_schedule_by_plugin_namespace(session=session, namespace=plugin.namespace)
             for registered_engine in engines:
                 if not registered_engine.cron_str:
                     continue
-                self._scheduler.add_engine(self._plugin_manager.get_engine_by_namespace(registered_engine.namespace),  CronTrigger.from_crontab(registered_engine.cron_str))
+                self.scheduler.add_engine(self.plugin_manager.get_engine_by_namespace(registered_engine.namespace),  CronTrigger.from_crontab(registered_engine.cron_str))
 
     def clear_background_jobs(self):
-        self._scheduler.clear_all()
+        self.scheduler.clear_all()
 
     def start_background_jobs(self):
-        self._scheduler.start()
+        self.scheduler.start()
 
-    def add_app_routers(self):
-        self._app.include_router(get_registered_router())
+    def addapp_routers(self):
+        self.app.include_router(get_registered_router())
 
-    def start_fastapi_app(self):
-        uvicorn.run(self._app, host=str(basic_config.host), port=basic_config.port)
+    def start_fastapiapp(self):
+        uvicorn.run(self.app, host=str(basic_config.host), port=basic_config.port)
 
     def start(self):
         for before_run_hook in app_hooks.get_before_startup_hooks():
@@ -55,7 +55,7 @@ class Launcher:
 
         self.add_background_jobs()
         self.start_background_jobs()
-        self.start_fastapi_app()
+        self.start_fastapiapp()
 
         for after_run_hook in app_hooks.get_after_startup_hooks():
             after_run_hook()
@@ -66,14 +66,13 @@ class Launcher:
             before_shutdown_hook()
 
         self.clear_background_jobs()
-        self._scheduler.shutdown()
-        self._scheduler = None
-        self._plugin_manager = None
-        self._app = None
+        self.scheduler.shutdown()
+        self.scheduler = None
+        self.plugin_manager = None
+        self.app = None
 
         for after_shutdown_hook in app_hooks.get_after_shutdown_hooks():
             after_shutdown_hook()
-
 
     def restart(self):
         restart_program()
