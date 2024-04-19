@@ -5,7 +5,7 @@ from typing import Tuple, Any
 
 class Downloader(BasicPlugin):
     @abstractmethod
-    def download(self, url: str, **kwargs) -> bytes:
+    def download(self, **kwargs) -> bytes:
         pass
 
     @abstractmethod
@@ -14,5 +14,9 @@ class Downloader(BasicPlugin):
 
     @abstractmethod
     def cancel(self):
+        pass
+
+    @abstractmethod
+    def pause(self):
         pass
 

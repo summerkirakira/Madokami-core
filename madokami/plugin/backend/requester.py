@@ -4,9 +4,10 @@ from ..basic_plugin import BasicPlugin
 
 class Requester(BasicPlugin):
     @abstractmethod
-    def request(self, data):
+    def request(self, **kwargs):
         pass
 
+    @property
     @abstractmethod
     def status(self) -> tuple[int, str]:
         pass

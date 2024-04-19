@@ -97,4 +97,4 @@ class PluginManager:
         return self.registered_engines[namespace]
 
 
-plugin_manager = PluginManager()
+# plugin_manager = PluginManager()

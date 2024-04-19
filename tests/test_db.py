@@ -5,10 +5,6 @@ from madokami.crud import create_user, add_plugin_config, get_plugin_config, get
 from sqlmodel import Session, select, delete
 
 
-def test_init_db():
-    init_db()
-
-
 def test_create_user():
     test_user = User(username="test", password="test")
     with Session(engine) as session:

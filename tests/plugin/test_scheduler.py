@@ -1,5 +1,5 @@
 from madokami.internal.scheduler import scheduler
-from madokami.plugin.manager import PluginManager, plugin_manager, LOCAL_PLUGIN_DIR
+from madokami.plugin.manager import PluginManager, LOCAL_PLUGIN_DIR
 from madokami.crud import add_plugin, get_plugins
 from madokami.models import Plugin
 from sqlmodel import Session
@@ -25,6 +25,7 @@ def rm_local_plugins():
 
 
 def test_scheduler():
+    plugin_manager = PluginManager()
     init_plugins()
     rm_local_plugins()
     plugin_manager.add_local_plugin(Path("tests/plugin/test_plugin"))

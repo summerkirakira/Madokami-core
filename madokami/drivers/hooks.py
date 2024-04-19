@@ -26,3 +26,4 @@ class AppHooks:
 
 
 app_hooks = AppHooks()
+

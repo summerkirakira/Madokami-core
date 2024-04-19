@@ -33,3 +33,4 @@ class PluginHooks:
 
 
 plugin_hooks = PluginHooks()
+
