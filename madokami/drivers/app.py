@@ -2,6 +2,6 @@ from fastapi import FastAPI
 from ..config import basic_config
 
 
-app = FastAPI()
-
-
+def get_fastapi_app() -> FastAPI:
+    app = FastAPI()
+    return app

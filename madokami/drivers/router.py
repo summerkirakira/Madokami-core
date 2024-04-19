@@ -8,6 +8,6 @@ def register_router(api_router: APIRouter, prefix: str = "", tags: list[str] = N
     api_router.include_router(router, prefix=prefix, tags=tags)
 
 
-def get_router() -> APIRouter:
+def get_registered_router() -> APIRouter:
     return router
 

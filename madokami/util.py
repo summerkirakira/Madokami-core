@@ -1,5 +1,7 @@
 import yaml
 from pathlib import Path
+import os
+import sys
 
 
 def load_yaml(file: Path) -> dict:
@@ -11,3 +13,6 @@ def dump_yaml(file: Path, data: dict) -> None:
     with open(file, "w") as f:
         yaml.dump(data, f)
 
+
+def restart_program():
+    os.execv(sys.executable, [sys.executable] + sys.argv)

@@ -35,7 +35,7 @@ class EngineSchedulerConfig(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     namespace: str = Field(unique=True)
     plugin_name: str = Field()
-    cron_str: str = Field()
+    cron_str: Optional[str] = Field()
 
 
 class PluginInfo(BaseModel):

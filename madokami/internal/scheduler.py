@@ -68,4 +68,4 @@ class MadokamiScheduler:
         self.scheduler.start()
 
 
-scheduler = MadokamiScheduler()
+# scheduler = MadokamiScheduler()

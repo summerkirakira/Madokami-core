@@ -117,7 +117,7 @@ class PluginManager:
                         engine_info = EngineSchedulerConfig(
                             namespace=plugin_engine.namespace,
                             plugin_name=plugin_namespace,
-                            cron_str="* * * 32 2",
+                            cron_str=None,
                         )
 
                         add_engine_scheduler_config(
