@@ -96,3 +96,18 @@ def get_engine_scheduler_config(*, session: Session, namespace: str) -> Optional
         return engine_scheduler_config
     else:
         return None
+
+
+def add_engine_scheduler_config(*, session: Session, engine_scheduler_config: EngineSchedulerConfig) -> EngineSchedulerConfig:
+    old_engine_scheduler_config = session.exec(select(EngineSchedulerConfig).where(EngineSchedulerConfig.namespace == engine_scheduler_config.namespace)).first()
+    if old_engine_scheduler_config:
+        session.delete(old_engine_scheduler_config)
+    session.add(engine_scheduler_config)
+    session.commit()
+    session.refresh(engine_scheduler_config)
+    return engine_scheduler_config
+
+
+def get_engines_schedule_by_plugin_namespace(*, session: Session, namespace: str) -> list[EngineSchedulerConfig]:
+    engine_scheduler_configs = session.exec(select(EngineSchedulerConfig).where(EngineSchedulerConfig.plugin_name == namespace)).all()
+    return [engine_scheduler_config for engine_scheduler_config in engine_scheduler_configs]

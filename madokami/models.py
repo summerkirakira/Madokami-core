@@ -1,5 +1,6 @@
 from sqlmodel import Field, Relationship, SQLModel
 from typing import Optional
+from pydantic import BaseModel
 
 
 class User(SQLModel, table=True):
@@ -21,7 +22,6 @@ class Plugin(SQLModel, table=True):
     name: str = Field()
     description: str = Field()
     is_active: bool = Field()
-    cron: str = Field(default="* * * 31 2")
 
 
 class Oauth2Client(SQLModel, table=True):
@@ -34,5 +34,11 @@ class Oauth2Client(SQLModel, table=True):
 class EngineSchedulerConfig(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     namespace: str = Field(unique=True)
+    plugin_name: str = Field()
     cron_str: str = Field()
 
+
+class PluginInfo(BaseModel):
+    name: str
+    namespace: str
+    description: str

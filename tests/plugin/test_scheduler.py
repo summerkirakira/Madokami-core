@@ -1,6 +1,6 @@
 from madokami.internal.scheduler import scheduler
 from madokami.plugin.manager import PluginManager, LOCAL_PLUGIN_DIR
-from madokami.crud import add_plugin, get_plugins
+from madokami.crud import add_plugin, get_plugins, get_engines_schedule_by_plugin_namespace
 from madokami.models import Plugin
 from sqlmodel import Session
 from madokami.db import engine
@@ -46,7 +46,10 @@ def test_scheduler():
 
 
     for plugin in reloaded_manager.get_active_plugins():
-        scheduler.add_engine(reloaded_manager.get_engine_by_namespace(plugin.namespace), CronTrigger.from_crontab("* * * * *"))
+        with Session(engine) as session:
+            engines = get_engines_schedule_by_plugin_namespace(session=session, namespace=plugin.namespace)
+        for registered_engine in engines:
+            scheduler.add_engine(reloaded_manager.get_engine_by_namespace(registered_engine.namespace), CronTrigger.from_crontab("* * * * *"))
     scheduler.start()
 
     assert len(scheduler.scheduler.get_jobs()) == 1

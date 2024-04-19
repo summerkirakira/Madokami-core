@@ -3,7 +3,7 @@ from typing import Tuple, Any
 from madokami.plugin.backend.engine import Engine
 from madokami.plugin.backend.requester import Requester
 from madokami.plugin import register_engine
-from madokami.models import Plugin
+from madokami.models import PluginInfo
 from madokami.log import logger
 
 
@@ -54,12 +54,15 @@ class TestRequester(Requester):
         return 'A test requester for testing purposes'
 
 
-plugin_info = Plugin(
-    namespace=TestEngine.namespace,
-    name=TestEngine.name,
-    description=TestEngine.description,
-    is_active=True
+test_engine = TestEngine()
+
+
+plugin_info = PluginInfo(
+    namespace=str(test_engine.namespace),
+    name=str(test_engine.name),
+    description=str(test_engine.description),
 )
 
 
-register_engine(TestEngine())
+register_engine(plugin=plugin_info, engine=test_engine)
+
