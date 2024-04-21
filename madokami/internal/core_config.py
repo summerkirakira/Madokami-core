@@ -4,9 +4,12 @@ from madokami.db import engine
 from sqlmodel import Session
 
 
-def get_config(key: str) -> Optional[str]:
+def get_config(key: str, default: str = None) -> Optional[str]:
     with Session(engine) as session:
-        return get_plugin_config(session=session, key=key)
+        value = get_plugin_config(session=session, key=key)
+        if value is None:
+            return default
+        return value
 
 
 def set_config(key: str, value: str) -> None:

@@ -3,42 +3,38 @@ from abc import ABC, abstractmethod
 from typing import Optional, Dict, Literal, Callable
 from pydantic import BaseModel
 from enum import Enum
+from pathlib import Path
 
+
+class DownloadStatus(Enum):
+    DOWNLOADING = "downloading"
+    PAUSED = "paused"
+    COMPLETED = "completed"
+    FAILED = "failed"
+    WAITING = "waiting"
+    REMOVED = "removed"
 
 class Download(BaseModel):
 
-    class Status(Enum):
-        DOWNLOADING = "downloading"
-        PAUSED = "paused"
-        COMPLETED = "completed"
-        FAILED = "failed"
-
-    class SourceType(Enum):
-        LINK = "link"
-        TORRENT = "torrent"
-        MAGNET = "magnet"
-
     id: str
-    url: str
-    source_type: SourceType
-    filename: str
-    size: int
-    total_size: int
+    is_metadata: bool
+    name: str
+    target_path: Path
+    dir: Path
+    total_length: int
+    progress: float
     current_download: int
-    status: Status
-    download_path: str
-    download_speed: int
-    download_requester: str
-    download_engine_namespace: str
+    status: DownloadStatus
+    current_speed: int
     finished_callback: Optional[Callable]
-    move_up: Callable[[], None]
+    move_up: Callable[[[]], None]
     move_to_bottom: Callable[[], None]
     move_down: Callable[[], None]
-    move_to: Callable[[int], None]
     purge: Callable[[], None]
-    pause: Callable[[], None]
+    pause: Callable[[bool], None]
     resume: Callable[[], None]
-    cancel: Callable[[], None]
+    remove: Callable[[bool], None]
+    error_message: Optional[str]
 
 
 class Downloader(metaclass=abc.ABCMeta):
@@ -62,22 +58,14 @@ class Downloader(metaclass=abc.ABCMeta):
         pass
 
     @abstractmethod
-    def get_download_by_id(self, download_id: str) -> Download:
+    def get_download_by_id(self, download_id: str) -> Optional[Download]:
         pass
 
     @abstractmethod
     def add_download(self, uri: str, options: dict = None, callback: Optional[Callable] = None) -> Download:
         pass
 
-    @abstractmethod
-    def pause_download(self, download_id: str) -> Download:
-        pass
-
-    @abstractmethod
-    def cancel_download(self, download_id: str) -> Download:
-        pass
-
-    @abstractmethod
-    def resume_download(self, download_id: str) -> Download:
+    @classmethod
+    def refresh(self):
         pass
 
