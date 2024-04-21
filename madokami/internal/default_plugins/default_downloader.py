@@ -55,9 +55,9 @@ class DefaultAria2Downloader(Downloader):
 
     def __init__(self):
         self._status = "Initialized"
-        aria2_host = get_config('madokami.config.aria2_host')
-        aria2_port = get_config('madokami.config.aria2_port')
-        aria2_secret = get_config('madokami.config.aria2_secret')
+        aria2_host = get_config('madokami.config.aria2_host', default='http://localhost')
+        aria2_port = get_config('madokami.config.aria2_port', default='6800')
+        aria2_secret = get_config('madokami.config.aria2_secret', default='')
         if aria2_host is None or aria2_port is None or aria2_secret is None:
             raise ValueError('Aria2 configuration is not set')
         client = aria2p.Client(

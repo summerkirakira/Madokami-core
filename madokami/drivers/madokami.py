@@ -11,6 +11,7 @@ from .router import get_registered_router
 import uvicorn
 from .hooks import app_hooks
 from madokami.util import restart_program
+from madokami.internal.default_plugins.default_downloader import DefaultAria2Downloader, Download
 
 
 def pre_start():
@@ -20,13 +21,14 @@ def pre_start():
     init_db()
 
 
-class Launcher:
+class MadokamiApp:
     def __init__(self):
         pre_start()
         self.plugin_manager = PluginManager()
         self.scheduler = MadokamiScheduler()
         self.app = get_fastapi_app()
-        self.addapp_routers()
+        self.add_app_routers()
+        self.downloader = DefaultAria2Downloader()
 
     def add_background_jobs(self):
         for plugin in self.plugin_manager.get_active_plugins():
@@ -43,8 +45,10 @@ class Launcher:
     def start_background_jobs(self):
         self.scheduler.start()
 
-    def addapp_routers(self):
-        self.app.include_router(get_registered_router())
+    def add_app_routers(self):
+        router = get_registered_router()
+
+        self.app.include_router(router=router, prefix='/v1')
 
     def start_fastapiapp(self):
         uvicorn.run(self.app, host=str(basic_config.host), port=basic_config.port)
