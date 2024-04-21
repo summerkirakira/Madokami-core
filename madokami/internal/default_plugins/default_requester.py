@@ -17,7 +17,7 @@ class DefaultRequester(Requester):
 
         self._status = "Initialized"
 
-    def request(self, url: str, method: str):
+    def request(self, url: str, method: str = 'GET'):
         self._status = "Requesting"
         response = requests.request(method, url, headers=self.headers, proxies=self.proxy)
         self._status = "Finished"

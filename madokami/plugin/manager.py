@@ -90,6 +90,9 @@ class PluginManager:
                 continue
             if plugin.is_local_plugin:
                 continue
+            if plugin.is_internal:
+                logger.info(f"Skipping internal plugin {plugin.namespace}")
+                continue
             try:
                 if '.' in plugin.namespace:
                     package_name = plugin.namespace.split('.')[-1]

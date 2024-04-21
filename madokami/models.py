@@ -45,3 +45,4 @@ class PluginInfo(BaseModel):
     namespace: str
     description: str
     is_local_plugin: bool = False
+    is_internal: bool = False

@@ -16,18 +16,20 @@ class DefaultAria2Downloader(Downloader):
         aria2_secret = get_config('madokami.config.aria2_secret')
         if aria2_host is None or aria2_port is None or aria2_secret is None:
             raise ValueError('Aria2 configuration is not set')
-        self.aria2 = aria2p.api.API(
-            aria2p.Client(
+        client = aria2p.Client(
                 host=aria2_host,
                 port=int(aria2_port),
                 secret=aria2_secret
             )
+        self.aria2 = aria2p.api.API(
+            client
         )
         self.downloads = None
-        self.gid = None
+        self.client = client
 
-    def download(self, uri: str, options: Options):
+    def download(self, uri: str, options: Options) -> list[Download]:
         self.downloads = self.aria2.add(uri, options)
+        return self.downloads
 
     @property
     def status(self) -> Tuple[int, list[Download]]:
@@ -50,4 +52,7 @@ class DefaultAria2Downloader(Downloader):
     @property
     def description(self) -> str:
         return 'Default Aria2 Downloader for madokami'
+
+    def get_options(self, gid: str):
+        return self.aria2.get_download(gid)
 
