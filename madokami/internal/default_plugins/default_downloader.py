@@ -8,6 +8,8 @@ from madokami.log import logger
 import uuid
 import threading
 import time
+from madokami.crud import get_download_history_by_link, add_download_history
+from madokami.models import DownloadHistory, MediaInfo
 
 
 def _convert_aria2_download(aria2_download: Aria2Download, finished_callback: Optional[Callable[[Download], None]] = None) -> Download:
@@ -74,6 +76,8 @@ class DefaultAria2Downloader(Downloader):
         self.refresh_thread = threading.Thread(target=self.refresh_thread)
         self.refresh_thread.start()
 
+        self.uid_to_uri_map = {}
+
     def check_finished(self):
         for uid, download in self.downloads.items():
             if download.is_complete and uid not in [finished_download.id for finished_download in self.finished_downloads]:
@@ -82,6 +86,10 @@ class DefaultAria2Downloader(Downloader):
                 callback = self._callback_map.get(uid)
                 if callback:
                     callback(finished_download)
+
+                uri = self.uid_to_uri_map.get(uid)
+                self._add_download_history(uri, success=True, message=f"Download {uri} is finished and file has been saved to {finished_download.target_path}")
+
                 self.finished_downloads.append(finished_download)
                 logger.info(f"Download {finished_download.name} is finished and file has been saved to {finished_download.target_path}")
 
@@ -117,15 +125,40 @@ class DefaultAria2Downloader(Downloader):
             converted_download.id = download_id
             return converted_download
 
-    def add_download(self, uri: str, options: dict = None, callback: Optional[Callable] = None) -> Download:
+    def add_download(self, uri: str, options: dict = None, callback: Optional[Callable] = None) -> Optional[Download]:
+        download_history = get_download_history_by_link(uri)
+        if download_history is not None:
+            if download_history.success:
+                logger.info(f"Download {uri} has been downloaded before, skipping")
+                return
+            else:
+                aria2_downloads = self.aria2.get_downloads()
+                if len(aria2_downloads) > 0:
+                    return
+
         downloads = self.aria2.add(uri, options)
         uid = str(uuid.uuid4())
         self._callback_map[uid] = callback
         self.downloads[uid] = downloads[0]
 
+        self._add_download_history(uri)
+        self.uid_to_uri_map[uid] = uri
+
         converted_download = _convert_aria2_download(downloads[0], callback)
         converted_download.id = uid
         return converted_download
+
+    @classmethod
+    def _add_download_history(self, uri: str, success: bool = False, message: str = "Download added to queue"):
+        add_download_history(
+            DownloadHistory(
+                time=int(time.time()),
+                link=uri,
+                success=success,
+                message=message
+            )
+        )
+
 
     def _refresh_downloads(self):
         for uid, download in self.downloads.items():

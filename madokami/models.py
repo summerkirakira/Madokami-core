@@ -46,3 +46,31 @@ class PluginInfo(BaseModel):
     description: str
     is_local_plugin: bool = False
     is_internal: bool = False
+
+
+class DownloadHistory(SQLModel, table=True):
+    id: Optional[str] = Field(default=None, primary_key=True)
+    time: int = Field()
+    link: str = Field()
+    success: bool = Field()
+    message: str = Field()
+
+
+class Contents(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    title: str = Field()
+    link: str = Field()
+    episode: int = Field()
+    path: str = Field()
+    add_time: int = Field()
+    media_info: Relationship = Relationship(back_populates="contents")
+
+
+class MediaInfo(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    link: str = Field()
+    type: str = Field()
+    title: str = Field()
+    season: int = Field()
+    contents: Relationship = Relationship(back_populates="media_info", link_model=Contents)
+

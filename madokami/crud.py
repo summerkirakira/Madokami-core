@@ -1,6 +1,7 @@
-from .models import User, PluginConfig, Plugin, Oauth2Client, EngineSchedulerConfig
+from .models import User, PluginConfig, Plugin, Oauth2Client, EngineSchedulerConfig, DownloadHistory
 from sqlmodel import Session, create_engine, select, SQLModel, delete
 from typing import Optional
+from .db import engine
 
 
 def create_user(*, session: Session, user: User) -> User:
@@ -111,3 +112,30 @@ def add_engine_scheduler_config(*, session: Session, engine_scheduler_config: En
 def get_engines_schedule_by_plugin_namespace(*, session: Session, namespace: str) -> list[EngineSchedulerConfig]:
     engine_scheduler_configs = session.exec(select(EngineSchedulerConfig).where(EngineSchedulerConfig.plugin_name == namespace)).all()
     return [engine_scheduler_config for engine_scheduler_config in engine_scheduler_configs]
+
+
+def get_download_histories() -> list[DownloadHistory]:
+    with Session(engine) as session:
+        download_histories = session.exec(select(DownloadHistory)).all()
+        return [download_history for download_history in download_histories]
+
+
+def get_download_history_by_link(link: str) -> Optional[DownloadHistory]:
+    with Session(engine) as session:
+        download_history = session.exec(select(DownloadHistory).where(DownloadHistory.link == link)).first()
+        if download_history:
+            return download_history
+        else:
+            return None
+
+
+def add_download_history(download_history: DownloadHistory) -> DownloadHistory:
+    with Session(engine) as session:
+        old_download_history = get_download_history_by_link(download_history.link)
+        if old_download_history:
+            session.delete(old_download_history)
+        session.add(download_history)
+        session.commit()
+        session.refresh(download_history)
+        return download_history
+
