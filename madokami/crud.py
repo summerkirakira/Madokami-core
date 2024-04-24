@@ -1,4 +1,4 @@
-from .models import User, PluginConfig, Plugin, Oauth2Client, EngineSchedulerConfig, DownloadHistory
+from .models import User, PluginConfig, Plugin, Oauth2Client, EngineSchedulerConfig, DownloadHistory, MediaInfo, Content
 from sqlmodel import Session, create_engine, select, SQLModel, delete
 from typing import Optional
 from .db import engine
@@ -138,4 +138,29 @@ def add_download_history(download_history: DownloadHistory) -> DownloadHistory:
         session.commit()
         session.refresh(download_history)
         return download_history
+
+
+def add_media_info(media_info: MediaInfo) -> MediaInfo:
+    with Session(engine) as session:
+        session.add(media_info)
+        session.commit()
+        session.refresh(media_info)
+        return media_info
+
+
+def get_median_info_by_id(id: str) -> Optional[MediaInfo]:
+    with Session(engine) as session:
+        media_info = session.exec(select(MediaInfo).where(MediaInfo.id == id)).first()
+        if media_info:
+            return media_info
+        else:
+            return None
+
+
+def add_content(content: Content) -> Content:
+    with Session(engine) as session:
+        session.add(content)
+        session.commit()
+        session.refresh(content)
+        return content
 

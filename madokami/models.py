@@ -56,7 +56,7 @@ class DownloadHistory(SQLModel, table=True):
     message: str = Field()
 
 
-class Contents(SQLModel, table=True):
+class Content(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     title: str = Field()
     link: str = Field()
@@ -67,10 +67,10 @@ class Contents(SQLModel, table=True):
 
 
 class MediaInfo(SQLModel, table=True):
-    id: Optional[int] = Field(default=None, primary_key=True)
+    id: Optional[str] = Field(primary_key=True)
     link: str = Field()
     type: str = Field()
     title: str = Field()
     season: int = Field()
-    contents: Relationship = Relationship(back_populates="media_info", link_model=Contents)
+    contents: Relationship = Relationship(back_populates="media_info", link_model=Content)
 
