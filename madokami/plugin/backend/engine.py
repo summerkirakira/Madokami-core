@@ -22,21 +22,7 @@ class Engine(BasicPlugin):
 
 
 class FileDownloaderEngine(Engine):
-    @abstractmethod
-    def downloader_status(self) -> list[DownloadStatus]:
-        ...
-
-    @abstractmethod
-    def pause_downloader(self, id: str) -> bool:
-        ...
-
-    @abstractmethod
-    def cancel_downloader(self, id: str) -> bool:
-        ...
-
-    @abstractmethod
-    def resume_downloader(self, id: str) -> bool:
-        ...
+    ...
 
 
 

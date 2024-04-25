@@ -1,7 +1,7 @@
-from .models import User, PluginConfig, Plugin, Oauth2Client, EngineSchedulerConfig, DownloadHistory, MediaInfo, Content
+from .models import User, PluginConfig, Plugin, Oauth2Client, EngineSchedulerConfig, DownloadHistory, Content
+from .models import Media as MediaInfo
 from sqlmodel import Session, create_engine, select, SQLModel, delete
 from typing import Optional
-from .db import engine
 
 
 def create_user(*, session: Session, user: User) -> User:
@@ -114,53 +114,47 @@ def get_engines_schedule_by_plugin_namespace(*, session: Session, namespace: str
     return [engine_scheduler_config for engine_scheduler_config in engine_scheduler_configs]
 
 
-def get_download_histories() -> list[DownloadHistory]:
-    with Session(engine) as session:
-        download_histories = session.exec(select(DownloadHistory)).all()
-        return [download_history for download_history in download_histories]
+def get_download_histories(session: Session) -> list[DownloadHistory]:
+    download_histories = session.exec(select(DownloadHistory)).all()
+    return [download_history for download_history in download_histories]
 
 
-def get_download_history_by_link(link: str) -> Optional[DownloadHistory]:
-    with Session(engine) as session:
-        download_history = session.exec(select(DownloadHistory).where(DownloadHistory.link == link)).first()
-        if download_history:
-            return download_history
-        else:
-            return None
-
-
-def add_download_history(download_history: DownloadHistory) -> DownloadHistory:
-    with Session(engine) as session:
-        old_download_history = get_download_history_by_link(download_history.link)
-        if old_download_history:
-            session.delete(old_download_history)
-        session.add(download_history)
-        session.commit()
-        session.refresh(download_history)
+def get_download_history_by_link(session: Session, link: str) -> Optional[DownloadHistory]:
+    download_history = session.exec(select(DownloadHistory).where(DownloadHistory.link == link)).first()
+    if download_history:
         return download_history
+    else:
+        return None
 
 
-def add_media_info(media_info: MediaInfo) -> MediaInfo:
-    with Session(engine) as session:
-        session.add(media_info)
-        session.commit()
-        session.refresh(media_info)
+def add_download_history(session: Session, download_history: DownloadHistory) -> DownloadHistory:
+    old_download_history = get_download_history_by_link(session, download_history.link)
+    if old_download_history:
+        session.delete(old_download_history)
+    session.add(download_history)
+    session.commit()
+    session.refresh(download_history)
+    return download_history
+
+
+def add_media_info(session: Session, media_info: MediaInfo) -> MediaInfo:
+    session.add(media_info)
+    session.commit()
+    session.refresh(media_info)
+    return media_info
+
+
+def get_media_info_by_id(session: Session, id: str) -> Optional[MediaInfo]:
+    media_info = session.exec(select(MediaInfo).where(MediaInfo.id == id)).first()
+    if media_info:
         return media_info
+    else:
+        return None
 
 
-def get_median_info_by_id(id: str) -> Optional[MediaInfo]:
-    with Session(engine) as session:
-        media_info = session.exec(select(MediaInfo).where(MediaInfo.id == id)).first()
-        if media_info:
-            return media_info
-        else:
-            return None
-
-
-def add_content(content: Content) -> Content:
-    with Session(engine) as session:
-        session.add(content)
-        session.commit()
-        session.refresh(content)
-        return content
+def add_content(session: Session, content: Content) -> Content:
+    session.add(content)
+    session.commit()
+    session.refresh(content)
+    return content
 

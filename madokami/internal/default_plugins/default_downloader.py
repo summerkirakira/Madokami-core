@@ -9,7 +9,8 @@ import uuid
 import threading
 import time
 from madokami.crud import get_download_history_by_link, add_download_history
-from madokami.models import DownloadHistory, MediaInfo
+from madokami.models import DownloadHistory
+from madokami.db import engine, Session
 
 
 def _convert_aria2_download(aria2_download: Aria2Download, finished_callback: Optional[Callable[[Download], None]] = None) -> Download:
@@ -126,7 +127,8 @@ class DefaultAria2Downloader(Downloader):
             return converted_download
 
     def add_download(self, uri: str, options: dict = None, callback: Optional[Callable] = None) -> Optional[Download]:
-        download_history = get_download_history_by_link(uri)
+        with Session(engine) as session:
+            download_history = get_download_history_by_link(session, uri)
         if download_history is not None:
             if download_history.success:
                 logger.info(f"Download {uri} has been downloaded before, skipping")
@@ -150,16 +152,16 @@ class DefaultAria2Downloader(Downloader):
 
     @classmethod
     def _add_download_history(self, uri: str, success: bool = False, message: str = "Download added to queue"):
-        add_download_history(
-            DownloadHistory(
-                time=int(time.time()),
-                link=uri,
-                success=success,
-                message=message
+        with Session(engine) as session:
+            add_download_history(
+                session,
+                DownloadHistory(
+                    time=int(time.time()),
+                    link=uri,
+                    success=success,
+                    message=message
+                )
             )
-        )
-
-
     def _refresh_downloads(self):
         for uid, download in self.downloads.items():
             download.update()

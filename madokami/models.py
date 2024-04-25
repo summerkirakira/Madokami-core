@@ -49,7 +49,7 @@ class PluginInfo(BaseModel):
 
 
 class DownloadHistory(SQLModel, table=True):
-    id: Optional[str] = Field(default=None, primary_key=True)
+    id: Optional[int] = Field(default=None, primary_key=True)
     time: int = Field()
     link: str = Field()
     success: bool = Field()
@@ -63,14 +63,15 @@ class Content(SQLModel, table=True):
     episode: int = Field()
     path: str = Field()
     add_time: int = Field()
-    media_info: Relationship = Relationship(back_populates="contents")
+    media_id: str | None = Field(default=None, foreign_key="media.id")
+    media: Optional['Media'] = Relationship(back_populates="contents")
 
 
-class MediaInfo(SQLModel, table=True):
-    id: Optional[str] = Field(primary_key=True)
+class Media(SQLModel, table=True):
+    id: str = Field(primary_key=True)
     link: str = Field()
     type: str = Field()
     title: str = Field()
     season: int = Field()
-    contents: Relationship = Relationship(back_populates="media_info", link_model=Content)
+    contents: list[Content] = Relationship(back_populates="media")
 
