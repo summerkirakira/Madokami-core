@@ -81,7 +81,7 @@ class DefaultAria2Downloader(Downloader):
 
     def check_finished(self):
         for uid, download in self.downloads.items():
-            if download.is_complete and uid not in [finished_download.id for finished_download in self.finished_downloads]:
+            if (download.is_complete or download.error_code == '13') and uid not in [finished_download.id for finished_download in self.finished_downloads]:
                 finished_download = _convert_aria2_download(download, self._callback_map.get(uid))
                 finished_download.id = uid
                 callback = self._callback_map.get(uid)
@@ -92,13 +92,17 @@ class DefaultAria2Downloader(Downloader):
                 self._add_download_history(uri, success=True, message=f"Download {uri} is finished and file has been saved to {finished_download.target_path}")
 
                 self.finished_downloads.append(finished_download)
+                self.downloads.pop(uid)
                 logger.info(f"Download {finished_download.name} is finished and file has been saved to {finished_download.target_path}")
 
     def refresh_thread(self):
         while True:
-            self._refresh_downloads()
-            self.check_finished()
-            time.sleep(5)
+            try:
+                self._refresh_downloads()
+                self.check_finished()
+                time.sleep(5)
+            except Exception as e:
+                logger.error(f"Error in refresh downloader: {e}")
 
     @property
     def namespace(self) -> str:
@@ -133,10 +137,6 @@ class DefaultAria2Downloader(Downloader):
             if download_history.success:
                 logger.info(f"Download {uri} has been downloaded before, skipping")
                 return
-            else:
-                aria2_downloads = self.aria2.get_downloads()
-                if len(aria2_downloads) > 0:
-                    return
 
         downloads = self.aria2.add(uri, options)
         uid = str(uuid.uuid4())
@@ -162,12 +162,16 @@ class DefaultAria2Downloader(Downloader):
                     message=message
                 )
             )
+
     def _refresh_downloads(self):
         for uid, download in self.downloads.items():
             download.update()
             if len(download.followed_by) == 1:
                 self.downloads[uid] = download.followed_by[0]
-            if download.error_code == '12':
+                continue
+            if download.error_code == '13':
+                continue
+            if download.error_code is not None:
                 all_downloads = self.aria2.get_downloads()
                 for old_download in all_downloads:
                     if (old_download.is_active or old_download.is_complete) and old_download.info_hash == download.info_hash:
