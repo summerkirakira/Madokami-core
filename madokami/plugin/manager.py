@@ -6,7 +6,7 @@ import pkgutil
 from pkgutil import ModuleInfo
 from pathlib import Path
 from pydantic import BaseModel
-from typing import Literal, Dict
+from typing import Literal, Dict, Union
 import os
 import shutil
 from ..crud import add_plugin, get_plugin_by_namespace
@@ -45,6 +45,7 @@ if not LOCAL_PLUGIN_DIR.exists():
 
 
 LOCAL_PLUGIN_PACKAGE_PREFIX = "data.plugins"
+INTERNAL_PLUGIN_PACKAGE_PREFIX = "app.plugins"
 
 
 def _copy_plugin_to_local_path(dir_path: Path):
@@ -89,14 +90,17 @@ class PluginManager:
         self._load_package_plugins()
         self._register_engine()
 
-    def _get_local_plugins(self) -> list[ModuleInfo]:
-        modules = []
-        for path in self.search_path:
-            if not path.exists():
-                continue
-        for module in pkgutil.iter_modules([str(path) for path in self.search_path]):
-            modules.append(module)
-        return modules
+    @classmethod
+    def _get_local_plugins(cls) -> [list[ModuleInfo], list[ModuleInfo]]:
+        internal_modules = []
+        for module in pkgutil.iter_modules([str(INTERNAL_PLUGIN_DIR)]):
+            internal_modules.append(module)
+
+        local_modules = []
+        for module in pkgutil.iter_modules([str(LOCAL_PLUGIN_DIR)]):
+            local_modules.append(module)
+
+        return internal_modules, local_modules
 
     def add_local_plugin(self, plugin_path: Path):
         if not is_python_package(plugin_path):
@@ -104,13 +108,23 @@ class PluginManager:
         _copy_plugin_to_local_path(plugin_path)
 
     def _load_local_plugins(self):
-        for module in self._get_local_plugins():
+        internal_modules, local_modules = self._get_local_plugins()
+        for module in local_modules:
             try:
                 plugin = importlib.import_module(f"{LOCAL_PLUGIN_PACKAGE_PREFIX}.{module.name}")
                 _register_meta_from_module(plugin)
                 logger.info(f"Loaded local plugin {module.name}")
             except Exception as e:
                 logger.error(f"Failed to load plugin {module.name}: {e}")
+
+        for module in internal_modules:
+            try:
+                plugin = importlib.import_module(f"{INTERNAL_PLUGIN_PACKAGE_PREFIX}.{module.name}")
+                _register_meta_from_module(plugin)
+                logger.info(f"Loaded internal plugin {module.name}")
+            except Exception as e:
+                logger.error(f"Failed to load plugin {module.name}: {e}")
+                raise e
 
     def _load_package_plugins(self):
         for plugin in self.plugin_names_from_db:
