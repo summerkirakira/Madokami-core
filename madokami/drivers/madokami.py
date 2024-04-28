@@ -3,7 +3,7 @@ from ..config import basic_config
 from pathlib import Path
 from madokami.plugin.manager import PluginManager
 from madokami.internal.scheduler import MadokamiScheduler
-from fastapi import FastAPI
+from madokami.plugin.backend.engine import Engine, FileDownloaderEngine, SearchEngine
 from apscheduler.triggers.cron import CronTrigger
 from madokami.crud import get_engines_schedule_by_plugin_namespace
 from .app import get_fastapi_app
@@ -37,7 +37,9 @@ class MadokamiApp:
             for registered_engine in engines:
                 if not registered_engine.cron_str:
                     continue
-                self.scheduler.add_engine(self.plugin_manager.get_engine_by_namespace(registered_engine.namespace),  CronTrigger.from_crontab(registered_engine.cron_str))
+                target_engine = self.plugin_manager.get_engine_by_namespace(registered_engine.namespace)
+                if isinstance(target_engine, FileDownloaderEngine):
+                    self.scheduler.add_engine(target_engine, CronTrigger.from_crontab(registered_engine.cron_str))
 
     def clear_background_jobs(self):
         self.scheduler.clear_all()

@@ -2,6 +2,7 @@ from abc import abstractmethod
 from ..basic_plugin import BasicPlugin
 from typing import Any, Literal
 from pydantic import BaseModel
+from .models import SearchItem
 
 
 class DownloadStatus(BaseModel):
@@ -23,6 +24,12 @@ class Engine(BasicPlugin):
 
 class FileDownloaderEngine(Engine):
     ...
+
+
+class SearchEngine(Engine):
+    @abstractmethod
+    def search(self, query: str) -> list[SearchItem]:
+        ...
 
 
 
