@@ -72,6 +72,7 @@ class Media(SQLModel, table=True):
     link: str = Field()
     type: str = Field()
     title: str = Field()
+    bangumi_id: Optional[int] = Field()
     season: int = Field()
     contents: list[Content] = Relationship(back_populates="media")
 

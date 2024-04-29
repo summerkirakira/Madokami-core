@@ -1,12 +1,7 @@
-from fastapi import FastAPI
 from apscheduler.schedulers.background import BackgroundScheduler
-from ..drivers import app
 from ..plugin.backend.engine import Engine
 import uuid
 from typing import Dict, Callable
-from ..db import engine
-from sqlmodel import Session
-from ..models import EngineSchedulerConfig
 from ..plugin import plugin_hooks
 
 
@@ -66,6 +61,9 @@ class MadokamiScheduler:
 
     def start(self):
         self.scheduler.start()
+
+    def shutdown(self):
+        self.scheduler.shutdown()
 
 
 # scheduler = MadokamiScheduler()

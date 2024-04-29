@@ -1,20 +1,32 @@
 from fastapi import APIRouter, HTTPException
-from .models import UserCreate, UserResponse
+from .models import UserCreate, UserResponse, InfoMessage
 from madokami.drivers.deps import SessionDep
 from madokami.models import User
-from madokami.crud import create_user, get_all_users
+from madokami.crud import create_user, get_all_users, get_oauth2_client, add_oauth2_client
 
-register_router = APIRouter()
+register_router = APIRouter(tags=["users"])
 
 
-@register_router.post("/user/create", response_model=UserCreate)
-def create_user(*, user_in: UserCreate, session: SessionDep):
+@register_router.post("/user/create", response_model=InfoMessage)
+def _create_user(*, user_in: UserCreate, session: SessionDep):
     new_user = User(username=user_in.username, password=user_in.password)
-    create_user(session=session, user=new_user)
-    return new_user
+    try:
+        create_user(session=session, user=new_user)
+        return InfoMessage(message="User created successfully")
+    except Exception as e:
+        return InfoMessage(message=f"Failed to create user: {e}", success=False)
 
 
 @register_router.get("/user/all", response_model=list[UserResponse])
-def get_all_users(session: SessionDep):
+def _get_users(session: SessionDep):
     users = [UserResponse(username=user.username, is_superuser=user.is_superuser) for user in get_all_users(session=session)]
     return users
+
+
+@register_router.post("user/login", response_model=InfoMessage)
+def _user_login(session: SessionDep, user: UserCreate):
+    try:
+        token = add_oauth2_client(session=session, username=user.username, password=user.password)
+        return InfoMessage(message="Login successful", data=token)
+    except Exception as e:
+        return InfoMessage(message=f"Login failed: {e}", success=False)

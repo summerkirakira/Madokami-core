@@ -80,6 +80,7 @@ class DefaultAria2Downloader(Downloader):
         self.uid_to_uri_map = {}
 
     def check_finished(self):
+        uid_to_remove = []
         for uid, download in self.downloads.items():
             if (download.is_complete or download.error_code == '13') and uid not in [finished_download.id for finished_download in self.finished_downloads]:
                 finished_download = _convert_aria2_download(download, self._callback_map.get(uid))
@@ -92,8 +93,10 @@ class DefaultAria2Downloader(Downloader):
                 self._add_download_history(uri, success=True, message=f"Download {uri} is finished and file has been saved to {finished_download.target_path}")
 
                 self.finished_downloads.append(finished_download)
-                self.downloads.pop(uid)
+                uid_to_remove.append(uid)
                 logger.info(f"Download {finished_download.name} is finished and file has been saved to {finished_download.target_path}")
+        for uid in uid_to_remove:
+            self.downloads.pop(uid)
 
     def refresh_thread(self):
         while True:
@@ -164,8 +167,11 @@ class DefaultAria2Downloader(Downloader):
             )
 
     def _refresh_downloads(self):
+        uid_to_remove = []
         for uid, download in self.downloads.items():
             download.update()
+            if download.is_removed:
+                uid_to_remove.append(uid)
             if len(download.followed_by) == 1:
                 self.downloads[uid] = download.followed_by[0]
                 continue
@@ -180,6 +186,9 @@ class DefaultAria2Downloader(Downloader):
                         else:
                             self.downloads[uid] = old_download
                         break
+
+        for uid in uid_to_remove:
+            self.downloads.pop(uid)
 
     def refresh(self):
         self._refresh_downloads()

@@ -2,6 +2,8 @@ from .models import User, PluginConfig, Plugin, Oauth2Client, EngineSchedulerCon
 from .models import Media as MediaInfo
 from sqlmodel import Session, create_engine, select, SQLModel, delete
 from typing import Optional
+import uuid
+import datetime
 
 
 def create_user(*, session: Session, user: User) -> User:
@@ -97,11 +99,28 @@ def deactivate_plugin(*, session: Session, namespace: str) -> Plugin:
 
 
 def get_oauth2_client(*, session: Session, token: str) -> Optional[Oauth2Client]:
-    oauth2_client = session.exec(select(Oauth2Client).where(Oauth2Client.client_secret == token)).first()
+    current_timestamp = datetime.datetime.now().timestamp()
+    oauth2_client = session.exec(select(Oauth2Client).where(Oauth2Client.client_secret == token and Oauth2Client.expires_at > current_timestamp))
     if oauth2_client:
-        return oauth2_client
+        return oauth2_client.first()
     else:
         return None
+
+
+def add_oauth2_client(*, session: Session, username: str, password: str) -> str:
+    is_exist = session.exec(select(User).where((User.username == username) & (User.password == password))).first()
+    if not is_exist:
+        raise ValueError("User not found")
+    oauth2_client = session.exec(select(Oauth2Client).where(Oauth2Client.client_id == username)).first()
+    if oauth2_client:
+        oauth2_client.client_secret = str(uuid.uuid4())
+        oauth2_client.expires_at = datetime.datetime.now().timestamp() + 3600 * 24 * 7
+    else:
+        oauth2_client = Oauth2Client(client_id=username, client_secret=str(uuid.uuid4()), expires_at=datetime.datetime.now().timestamp() + 3600 * 24 * 7)
+    session.add(oauth2_client)
+    session.commit()
+    session.refresh(oauth2_client)
+    return oauth2_client.client_secret
 
 
 def get_engine_scheduler_config(*, session: Session, namespace: str) -> Optional[EngineSchedulerConfig]:

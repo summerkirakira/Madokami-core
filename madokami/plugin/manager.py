@@ -184,7 +184,7 @@ class PluginManager:
         return [plugin for plugin in self.plugin_names_from_db if plugin.is_active]
 
     def get_engine_by_namespace(self, namespace: str) -> Engine:
+        if namespace not in self.registered_engines:
+            raise ValueError(f"Engine {namespace} not found")
         return self.registered_engines[namespace]
 
-
-# plugin_manager = PluginManager()

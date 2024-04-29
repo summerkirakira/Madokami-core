@@ -14,8 +14,8 @@ class DownloadStatus(Enum):
     WAITING = "waiting"
     REMOVED = "removed"
 
-class Download(BaseModel):
 
+class Download(BaseModel):
     id: str
     is_metadata: bool
     name: str
