@@ -7,11 +7,12 @@ from madokami.plugin.backend.engine import Engine, FileDownloaderEngine, SearchE
 from apscheduler.triggers.cron import CronTrigger
 from madokami.crud import get_engines_schedule_by_plugin_namespace
 from .app import get_fastapi_app
-from .router import get_registered_router
+from .router import get_registered_router, register_router
 import uvicorn
 from .hooks import app_hooks
 from madokami.util import restart_program
-from madokami.internal.default_plugins.default_downloader import DefaultAria2Downloader, Download
+from madokami.internal.default_plugins.default_downloader import DefaultAria2Downloader
+from madokami.api import get_internal_routers
 
 
 def pre_start():
@@ -48,8 +49,8 @@ class MadokamiApp:
         self.scheduler.start()
 
     def add_app_routers(self):
+        self._register_internal_routers()
         router = get_registered_router()
-
         self.app.include_router(router=router, prefix='/v1')
 
     def start_fastapiapp(self):
@@ -79,6 +80,11 @@ class MadokamiApp:
 
         for after_shutdown_hook in app_hooks.get_after_shutdown_hooks():
             after_shutdown_hook()
+
+    @classmethod
+    def _register_internal_routers(cls):
+        for router in get_internal_routers():
+            register_router(router)
 
     def restart(self):
         restart_program()

@@ -16,6 +16,19 @@ def create_user(*, session: Session, user: User) -> User:
     return user
 
 
+def get_user(*, session: Session, username: str) -> Optional[User]:
+    user = session.exec(select(User).where(User.username == username)).first()
+    if user:
+        return user
+    else:
+        return None
+
+
+def get_all_users(*, session: Session) -> list[User]:
+    users = session.exec(select(User)).all()
+    return [user for user in users]
+
+
 def add_plugin_config(*, session: Session, key: str, value: str) -> None:
     plugin_config = session.exec(select(PluginConfig).where(PluginConfig.key == key)).first()
     if plugin_config:
