@@ -4,7 +4,7 @@ from madokami.drivers.deps import SessionDep
 from madokami.models import User
 from madokami.crud import create_user, get_all_users, get_oauth2_client, add_oauth2_client
 
-register_router = APIRouter(tags=["users"])
+register_router = APIRouter(tags=["User"])
 
 
 @register_router.post("/user/create", response_model=InfoMessage)
@@ -23,7 +23,7 @@ def _get_users(session: SessionDep):
     return users
 
 
-@register_router.post("user/login", response_model=InfoMessage)
+@register_router.post("/user/login", response_model=InfoMessage)
 def _user_login(session: SessionDep, user: UserCreate):
     try:
         token = add_oauth2_client(session=session, username=user.username, password=user.password)

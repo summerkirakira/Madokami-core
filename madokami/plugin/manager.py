@@ -18,6 +18,7 @@ from typing import Tuple, Any, Type
 from madokami.internal.models import PluginMetaData
 from madokami.internal.core_config import get_config, get_all_plugin_metas, register_plugin_meta
 from madokami.plugin import register_engine
+from madokami.plugin.subscription_regiser import register_subscription_manager, get_registered_subscription_managers
 
 
 def load_plugin_names_from_db() -> list[PluginInfo]:
@@ -78,6 +79,12 @@ def _register_meta_from_module(module: Any):
         except Exception as e:
             logger.error(f"Failed to register engine {plugin_engine} from {module.__name__}: {e}")
 
+    try:
+        if plugin_meta.subscription_manager:
+            register_subscription_manager(plugin_meta.namespace, plugin_meta.subscription_manager)
+    except Exception as e:
+        logger.error(f"Failed to register subscription function from {module.__name__}: {e}")
+
 
 class PluginManager:
     def __init__(self):
@@ -89,6 +96,7 @@ class PluginManager:
         self._load_local_plugins()
         self._load_package_plugins()
         self._register_engine()
+        self.subscription_managers = get_registered_subscription_managers()
 
     @classmethod
     def _get_local_plugins(cls) -> [list[ModuleInfo], list[ModuleInfo]]:

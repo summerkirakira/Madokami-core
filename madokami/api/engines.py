@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException, Depends
 from .models import UserCreate, UserResponse, InfoMessage
 from madokami.drivers.deps import SessionDep, get_client_id
 
-engine_router = APIRouter(tags=["engines"])
+engine_router = APIRouter(tags=["Engine"])
 
 
 @engine_router.get("/engine/run", response_model=InfoMessage, dependencies=[Depends(get_client_id)])

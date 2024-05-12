@@ -190,3 +190,8 @@ def add_content(session: Session, content: Content) -> Content:
     session.refresh(content)
     return content
 
+
+def get_all_media_info(session: Session) -> list[MediaInfo]:
+    media_infos = session.exec(select(MediaInfo)).all()
+    return [media_info for media_info in media_infos]
+

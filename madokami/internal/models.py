@@ -1,5 +1,6 @@
 from pydantic import BaseModel
-from typing import List, Union
+from typing import List, Union, Callable, Optional, Any
+from madokami.plugin.subscription import SubscriptionManager
 
 
 class Setting(BaseModel):
@@ -17,6 +18,7 @@ class PluginMetaData(BaseModel):
     license: str = 'MIT'
     settings: list[Setting] = []
     engines: list[str] = []
+    subscription_manager: Any  # SubscriptionManager
 
 
 class BangumiSearchResult(BaseModel):
