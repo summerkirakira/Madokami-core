@@ -15,3 +15,16 @@ def run_engine(engine_namespace: str):
         return InfoMessage(message='Engine started')
     except Exception as e:
         return InfoMessage(message=f'Failed to start engine: {e}', success=False)
+
+
+@engine_router.get("/engine/run-all", response_model=InfoMessage, dependencies=[Depends(get_client_id)])
+def refresh_all_engines():
+    from madokami import get_app
+    app = get_app()
+    try:
+        engines = app.plugin_manager.registered_engines.values()
+        for engine in engines:
+            engine.run()
+        return InfoMessage(message='Engines refreshed')
+    except Exception as e:
+        return InfoMessage(message=f'Failed to refresh engines: {e}', success=False)

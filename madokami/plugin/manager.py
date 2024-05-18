@@ -19,6 +19,8 @@ from madokami.internal.models import PluginMetaData
 from madokami.internal.core_config import get_config, get_all_plugin_metas, register_plugin_meta
 from madokami.plugin import register_engine
 from madokami.plugin.subscription_regiser import register_subscription_manager, get_registered_subscription_managers
+from .settings_register import register_setting, get_registered_settings
+from madokami.internal.settings import register_internal_settings
 
 
 def load_plugin_names_from_db() -> list[PluginInfo]:
@@ -76,6 +78,8 @@ def _register_meta_from_module(module: Any):
                 logger.error(f"Engine {new_engine} is not a subclass of Engine")
                 continue
             register_engine(plugin_meta.namespace, new_engine())
+            for setting in plugin_meta.settings:
+                register_setting(setting.key, setting.name, setting.description, plugin_meta.namespace, setting.default)
         except Exception as e:
             logger.error(f"Failed to register engine {plugin_engine} from {module.__name__}: {e}")
 
@@ -93,10 +97,12 @@ class PluginManager:
         self.search_path.add(LOCAL_PLUGIN_DIR)
         self.search_path.add(INTERNAL_PLUGIN_DIR)
         self.registered_engines: Dict[str, Engine] = {}
+        self._register_internal_settings()
         self._load_local_plugins()
         self._load_package_plugins()
         self._register_engine()
         self.subscription_managers = get_registered_subscription_managers()
+        self.settings = get_registered_settings()
 
     @classmethod
     def _get_local_plugins(cls) -> [list[ModuleInfo], list[ModuleInfo]]:
@@ -155,6 +161,10 @@ class PluginManager:
                 logger.info(f"Loaded package plugin {plugin.namespace}")
             except Exception as e:
                 logger.error(f"Failed to load plugin {plugin.namespace}: {e}")
+
+    @classmethod
+    def _register_internal_settings(cls):
+        register_internal_settings()
 
     def _register_engine(self):
         with Session(engine) as session:

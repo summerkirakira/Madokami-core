@@ -86,6 +86,11 @@ class AddSubscriptionBody(BaseModel):
     namespace: str
 
 
+class RemoveSubscriptionBody(BaseModel):
+    id: str
+    namespace: str
+
+
 class PluginInfoResponse(InfoMessage):
 
     class PluginInfo(BaseModel):
@@ -103,4 +108,50 @@ class PluginInfoResponse(InfoMessage):
         is_internal: bool
         engines: list[Engine]
 
-    data: list[PluginInfo]
+    data: list[PluginInfo] = []
+
+
+class SettingsAllResponse(InfoMessage):
+
+    class SettingRecord(BaseModel):
+
+        class Setting(BaseModel):
+            key: str
+            name: str
+            description: str
+            value: Optional[str]
+
+        namespace: str
+        settings: list[Setting]
+
+    data: Optional[list[SettingRecord]] = None
+
+
+class UpdateSettingBody(BaseModel):
+    key: str
+    value: Optional[str]
+
+
+class LogResponse(InfoMessage):
+    data: Optional[list[str]] = None
+
+
+class AllScheduledTasksResponse(InfoMessage):
+
+    class Plugin(BaseModel):
+        class ScheduledTask(BaseModel):
+            id: int
+            namespace: str
+            name: str
+            description: str
+            cron_str: Optional[str]
+
+        namespace: str
+        tasks: list[ScheduledTask]
+
+    data: list[Plugin] = []
+
+
+class UpdateCronBody(BaseModel):
+    schedule_id: int
+    cron_str: Optional[str]

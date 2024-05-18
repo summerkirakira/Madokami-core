@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException, Depends
-from .models import SubscriptionsAllResponse, AddSubscriptionBody, InfoMessage
+from .models import SubscriptionsAllResponse, AddSubscriptionBody, InfoMessage, RemoveSubscriptionBody
 from madokami.drivers.deps import SessionDep, get_client_id
 from madokami.plugin.subscription import SubscriptionManager
 from sqlmodel import Session
@@ -41,8 +41,22 @@ def add_subscription(subscription: AddSubscriptionBody, session: SessionDep):
     if not subscription_manager:
         raise HTTPException(status_code=404, detail="Subscription manager not found")
     try:
-        subscription_manager.subscribe(session=session, subscription=subscription.subscription)
+        subscription_manager.subscribe(session=session, subscription=subscription)
         return InfoMessage(message="Subscription added successfully")
     except Exception as e:
         return InfoMessage(message=f"Failed to add subscription: {e}", success=False)
+
+
+@subscribe_router.post("/subscribe/remove", response_model=InfoMessage, dependencies=[Depends(get_client_id)])
+def remove_subscription(subscription: RemoveSubscriptionBody, session: SessionDep):
+    from madokami import get_app
+    app = get_app()
+    subscription_manager = app.plugin_manager.subscription_managers.get(subscription.namespace)
+    if not subscription_manager:
+        raise HTTPException(status_code=404, detail="Subscription manager not found")
+    try:
+        subscription_manager.unsubscribe(session=session, subscription_id=subscription.id)
+        return InfoMessage(message="Subscription removed successfully")
+    except Exception as e:
+        return InfoMessage(message=f"Failed to remove subscription: {e}", success=False)
 

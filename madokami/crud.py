@@ -10,7 +10,11 @@ def create_user(*, session: Session, user: User) -> User:
 
     old_user = session.exec(select(User).where(User.username == user.username)).first()
     if old_user:
-        raise ValueError("User already exists")
+        old_user.password = user.password
+        session.add(old_user)
+        session.commit()
+        session.refresh(old_user)
+        return old_user
 
     session.add(user)
     session.commit()
@@ -31,7 +35,7 @@ def get_all_users(*, session: Session) -> list[User]:
     return [user for user in users]
 
 
-def add_plugin_config(*, session: Session, key: str, value: str) -> None:
+def add_plugin_config(*, session: Session, key: str, value: Optional[str]) -> None:
     plugin_config = session.exec(select(PluginConfig).where(PluginConfig.key == key)).first()
     if plugin_config:
         plugin_config.value = value
@@ -131,6 +135,11 @@ def get_engine_scheduler_config(*, session: Session, namespace: str) -> Optional
         return None
 
 
+def get_engine_schedule_configs(session: Session) -> list[EngineSchedulerConfig]:
+    engine_scheduler_configs = session.exec(select(EngineSchedulerConfig)).all()
+    return [engine_scheduler_config for engine_scheduler_config in engine_scheduler_configs]
+
+
 def add_engine_scheduler_config(*, session: Session, engine_scheduler_config: EngineSchedulerConfig) -> EngineSchedulerConfig:
     old_engine_scheduler_config = session.exec(select(EngineSchedulerConfig).where(EngineSchedulerConfig.namespace == engine_scheduler_config.namespace)).first()
     if old_engine_scheduler_config:
@@ -139,6 +148,17 @@ def add_engine_scheduler_config(*, session: Session, engine_scheduler_config: En
     session.commit()
     session.refresh(engine_scheduler_config)
     return engine_scheduler_config
+
+
+def update_engine_scheduler_config(*, session: Session, engine_scheduler_id: int, cron_str: str) -> EngineSchedulerConfig:
+    config = session.exec(select(EngineSchedulerConfig).where(EngineSchedulerConfig.id == engine_scheduler_id)).first()
+    if not config:
+        raise ValueError("Engine scheduler config not found")
+    config.cron_str = cron_str
+    session.add(config)
+    session.commit()
+    session.refresh(config)
+    return config
 
 
 def get_engines_schedule_by_plugin_namespace(*, session: Session, namespace: str) -> list[EngineSchedulerConfig]:

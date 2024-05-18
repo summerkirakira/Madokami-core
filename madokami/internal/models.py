@@ -7,6 +7,7 @@ class Setting(BaseModel):
     key: str
     name: str
     description: str
+    default: Optional[str] = None
 
 
 class PluginMetaData(BaseModel):

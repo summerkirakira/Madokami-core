@@ -14,5 +14,5 @@ class SearchItem(BaseModel):
     tags: list[str] = []
     link: str
     last_updated: datetime.datetime
-    callback: Union[Callable[['SearchItem', str], None], None]
+    # callback: Union[Callable[['SearchItem', str], None], None]
     is_checked: bool = False

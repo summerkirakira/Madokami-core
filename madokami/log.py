@@ -19,6 +19,26 @@ logger: "Logger" = loguru.logger
 # logger.addHandler(default_handler)
 
 
+class MessageStorageHandler:
+    def __init__(self):
+        self.logs = []
+
+    def write(self, message):
+        # 将日志消息添加到数组中
+        message_str = str(message)
+        if message_str.endswith("\n"):
+            message_str = message_str[:-1]
+        self.logs.append(message_str)
+
+    def __call__(self, message):
+        self.write(message)
+
+    def get_messages(self, limit: int = 1000) -> list[str]:
+        if len(self.logs) > limit:
+            return self.logs[-limit:]
+        return self.logs
+
+
 # https://loguru.readthedocs.io/en/stable/overview.html#entirely-compatible-with-standard-logging
 class LoguruHandler(logging.Handler):  # pragma: no cover
     """logging 与 loguru 之间的桥梁，将 logging 的日志转发到 loguru。"""
@@ -70,4 +90,20 @@ logger.add(
     level=0,
     rotation="10 MB",
     compression="zip"
+)
+
+# logger.add(
+#     LoguruHandler(),
+#     level=0,
+#     format=default_format,
+#     serialize=False
+# )
+
+message_storage_handler = MessageStorageHandler()
+
+logger.add(
+    message_storage_handler,
+    level=0,
+    format=default_format,
+    serialize=False
 )

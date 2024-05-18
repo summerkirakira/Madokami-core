@@ -1,8 +1,7 @@
-from fastapi import APIRouter, HTTPException, Depends
-from .models import UserCreate, UserResponse, InfoMessage, DownloadResponse, DownloadItem, DownloadData
+from fastapi import APIRouter, Depends
+from .models import InfoMessage, DownloadResponse, DownloadItem, DownloadData
 from madokami.drivers.deps import SessionDep, get_client_id
 from madokami.internal.downloader import Download
-from typing import Union
 
 download_router = APIRouter(tags=["Download"])
 
@@ -87,3 +86,14 @@ def remove_download(download_id: str):
         return DownloadItem(data=convert_download(download))
     except Exception as e:
         return DownloadItem(message=f'Failed to remove download: {e}', success=False)
+
+
+@download_router.post("/download/clear", response_model=InfoMessage, dependencies=[Depends(get_client_id)])
+def _clear_downloads():
+    from madokami import get_app
+    app = get_app()
+    try:
+        app.downloader.remove_all()
+        return InfoMessage(message="Downloads cleared successfully")
+    except Exception as e:
+        return InfoMessage(message=f'Failed to clear downloads: {e}', success=False)

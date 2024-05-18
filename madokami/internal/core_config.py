@@ -19,7 +19,10 @@ def set_config(key: str, value: str) -> None:
 
 
 def get_proxy_url() -> Optional[str]:
-    return get_config(key='madokami.config.proxy_url')
+    config = get_config(key='madokami.config.proxy_url')
+    if config == '':
+        return None
+    return config
 
 
 _registered_metas: dict[str, PluginMetaData] = {}

@@ -1,13 +1,14 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends
 from .models import UserCreate, UserResponse, InfoMessage
 from madokami.drivers.deps import SessionDep
 from madokami.models import User
 from madokami.crud import create_user, get_all_users, get_oauth2_client, add_oauth2_client
+from madokami.drivers.deps import SessionDep, get_client_id
 
 register_router = APIRouter(tags=["User"])
 
 
-@register_router.post("/user/create", response_model=InfoMessage)
+@register_router.post("/user/create", response_model=InfoMessage, dependencies=[Depends(get_client_id)])
 def _create_user(*, user_in: UserCreate, session: SessionDep):
     new_user = User(username=user_in.username, password=user_in.password)
     try:
@@ -30,3 +31,4 @@ def _user_login(session: SessionDep, user: UserCreate):
         return InfoMessage(message="Login successful", data=token)
     except Exception as e:
         return InfoMessage(message=f"Login failed: {e}", success=False)
+

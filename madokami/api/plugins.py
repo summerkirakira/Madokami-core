@@ -1,12 +1,12 @@
 from fastapi import APIRouter, HTTPException, Depends
-from .models import UserCreate, UserResponse, InfoMessage, PluginInfoResponse
+from .models import UserCreate, UserResponse, PluginInfoResponse
 from madokami.drivers.deps import SessionDep, get_client_id
 from madokami.crud import get_engines_schedule_by_plugin_namespace
 
 plugin_router = APIRouter(tags=["Plugin"])
 
 
-@plugin_router.get("/plugin/info", response_model=InfoMessage, dependencies=[Depends(get_client_id)])
+@plugin_router.get("/plugin/info", response_model=PluginInfoResponse, dependencies=[Depends(get_client_id)])
 def run_engine(session: SessionDep):
     from madokami import get_app
     app = get_app()
@@ -39,4 +39,4 @@ def run_engine(session: SessionDep):
         return PluginInfoResponse(data=plugin_response_list)
 
     except Exception as e:
-        return InfoMessage(message=f'Failed to get plugins info: {e}', success=False)
+        return PluginInfoResponse(message=f'Failed to get plugins info: {e}', success=False)

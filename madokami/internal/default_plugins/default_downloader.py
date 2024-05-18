@@ -137,9 +137,10 @@ class DefaultAria2Downloader(Downloader):
         with Session(engine) as session:
             download_history = get_download_history_by_link(session, uri)
         if download_history is not None:
-            if download_history.success:
-                logger.info(f"Download {uri} has been downloaded before, skipping")
-                return
+            # if download_history.success:
+            #     logger.info(f"Download {uri} has been downloaded before, skipping")
+            #     return
+            return None
 
         downloads = self.aria2.add(uri, options)
         uid = str(uuid.uuid4())
@@ -192,4 +193,10 @@ class DefaultAria2Downloader(Downloader):
 
     def refresh(self):
         self._refresh_downloads()
+
+    def remove_all(self):
+        for uid, download in self.downloads.items():
+            download.remove(force=True, files=True)
+        self.downloads = {}
+        self.finished_downloads = []
 

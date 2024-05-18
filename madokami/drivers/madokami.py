@@ -67,6 +67,11 @@ class MadokamiApp:
         for after_run_hook in app_hooks.get_after_startup_hooks():
             after_run_hook()
 
+    def restart_scheduler(self):
+        self.scheduler.clear_all()
+        self.add_background_jobs()
+        self.start_background_jobs()
+
     def shutdown(self):
 
         for before_shutdown_hook in app_hooks.get_before_shutdown_hooks():

@@ -35,8 +35,3 @@ class BasicPlugin(metaclass=abc.ABCMeta):
     @abstractmethod
     def description(self) -> str:
         pass
-
-    @property
-    @abstractmethod
-    def status(self) -> Status:
-        pass

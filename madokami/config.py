@@ -16,6 +16,7 @@ class MadokamiBasicConfig(BaseSettings):
     port: int = 8000
     debug: bool = False
     sqlite_uri: str = "./data/madokami.db"
+    static_files: str = "../frontend/dist"
 
     def __init__(self, **kwargs: Any):
         super().__init__(**kwargs)

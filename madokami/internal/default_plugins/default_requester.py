@@ -5,9 +5,8 @@ import requests
 
 class DefaultRequester(Requester):
 
-    def __init__(self, headers: dict = None):
-        self.headers = headers
-        if proxy_url := get_proxy_url() is not None:
+    def update_proxy(self):
+        if (proxy_url := get_proxy_url()) is not None:
             self.proxy = {
                 'http': proxy_url,
                 'https': proxy_url
@@ -15,9 +14,12 @@ class DefaultRequester(Requester):
         else:
             self.proxy = None
 
+    def __init__(self, headers: dict = None):
+        self.headers = headers
         self._status = "Initialized"
 
     def request(self, url: str, method: str = 'GET', data: dict = None):
+        self.update_proxy()
         self._status = "Requesting"
         response = requests.request(method, url, headers=self.headers, proxies=self.proxy, json=data)
         self._status = "Finished"
