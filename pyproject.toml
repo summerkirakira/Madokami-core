@@ -1,8 +1,8 @@
 [tool.poetry]
-name = "fastapiproject"
+name = "madokami"
 version = "0.1.0"
-description = ""
-authors = ["Hongpei Zheng <zhenghongpei@gmail.com>"]
+description = "A core library for madokami"
+authors = ["Hongpei Zheng <summerkirakira@gmail.com>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
