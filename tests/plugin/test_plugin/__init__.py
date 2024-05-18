@@ -2,9 +2,28 @@ from typing import Tuple, Any
 
 from madokami.plugin.backend.engine import Engine
 from madokami.plugin.backend.requester import Requester
-from madokami.plugin import register_engine
-from madokami.models import PluginInfo
 from madokami.log import logger
+
+
+__metadata__ = {
+    'name': 'Test Plugin',
+    'namespace': 'summerkirakira.test_project',
+    'description': 'A plugin for Test Project',
+    'version': '0.0.1',
+    'author': 'summerkirakira',
+    'license': 'MIT',
+    'settings': [
+        {
+            'key': 'test_project.test_setting',
+            'name': 'Test Setting',
+            'description': 'A test setting for testing purposes',
+        },
+    ],
+    'engines': [
+        'TestEngine'
+    ],
+    'subscription_manager': None
+}
 
 
 class TestEngine(Engine):
@@ -52,17 +71,4 @@ class TestRequester(Requester):
     @property
     def description(self) -> str:
         return 'A test requester for testing purposes'
-
-
-test_engine = TestEngine()
-
-
-plugin_info = PluginInfo(
-    namespace=str(test_engine.namespace),
-    name=str(test_engine.name),
-    description=str(test_engine.description),
-)
-
-
-register_engine(plugin=plugin_info, engine=test_engine)
 
