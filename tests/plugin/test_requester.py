@@ -1,5 +1,4 @@
 from madokami.internal.default_plugins.default_requester import DefaultRequester
-from madokami.internal.core_config import get_config, set_config
 
 
 def test_default_requester():

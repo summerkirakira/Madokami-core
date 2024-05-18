@@ -54,4 +54,5 @@ def test_scheduler():
     scheduler.start()
 
     assert len(scheduler.scheduler.get_jobs()) == 1
+    scheduler.shutdown()
 

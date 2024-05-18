@@ -1,6 +1,5 @@
 from madokami.internal.default_plugins.default_downloader import DefaultAria2Downloader, Download
 from madokami import set_config
-import time
 import pytest
 
 
