@@ -19,20 +19,20 @@ _internal_settings = [
     {
         'key': 'madokami.config.aria2_host',
         'name': 'Aria2 地址',
-        'description': '为下载器指定Aria2地址',
+        'description': '为下载器指定Aria2地址 (重启生效)',
         'default': 'http://localhost'
     },
     {
         'key': 'madokami.config.aria2_port',
         'name': 'Aria2 端口',
-        'description': '为下载器指定Aria2端口',
+        'description': '为下载器指定Aria2端口 (重启生效)',
         'default': 6800
     },
     {
         'key': 'madokami.config.aria2_secret',
         'name': 'Aria2 密钥',
-        'description': '为下载器指定PRC密钥',
-        'default': ''
+        'description': '为下载器指定PRC密钥 (重启生效)',
+        'default': 'MADOKAMI'
     },
     {
         'key': 'madokami.config.bangumi_token',

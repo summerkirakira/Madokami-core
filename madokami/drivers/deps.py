@@ -17,7 +17,7 @@ SessionDep = Annotated[Session, Depends(get_db)]
 def get_client_id(session: SessionDep, x_token: str = Header(...)) -> str:
     client = get_oauth2_client(session=session, token=x_token)
     if not client:
-        raise HTTPException(status_code=404, detail="Client not found")
+        raise HTTPException(status_code=409, detail="Client not found")
     return client.client_id
 
 
