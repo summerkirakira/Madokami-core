@@ -79,6 +79,30 @@ class DefaultAria2Downloader(Downloader):
 
         self.uid_to_uri_map = {}
 
+        self.downloading_urls: list[str] = []
+
+        threading.Thread(target=self.check_aria2_connection).start()
+        threading.Thread(target=self.remove_all_downloads).start()
+
+    def check_aria2_connection(self):
+        try:
+            self.aria2.get_downloads()
+            logger.success("Connected to aria2 successfully")
+        except Exception as e:
+            logger.error(f"Failed to connect to aria2: {e}")
+            return False
+        return True
+
+    def remove_all_downloads(self):
+        try:
+            for download in self.aria2.get_downloads():
+                logger.info(f"Removing download {download.name}")
+                download.remove(force=True, files=True)
+
+        except Exception as e:
+            logger.error(f"Failed to remove all downloads: {e}")
+            return False
+
     def check_finished(self):
         uid_to_remove = []
         for uid, download in self.downloads.items():
@@ -137,10 +161,15 @@ class DefaultAria2Downloader(Downloader):
         with Session(engine) as session:
             download_history = get_download_history_by_link(session, uri)
         if download_history is not None:
-            # if download_history.success:
-            #     logger.info(f"Download {uri} has been downloaded before, skipping")
-            #     return
-            return None
+            if download_history.success:
+                logger.info(f"Download {uri} has been successfully downloaded before, skipping")
+                return
+
+        if uri in self.downloading_urls:
+            logger.info(f"Download {uri} is already in queue, skipping")
+            return
+
+        self.downloading_urls.append(uri)
 
         downloads = self.aria2.add(uri, options)
         uid = str(uuid.uuid4())
