@@ -8,13 +8,10 @@ import datetime
 
 def create_user(*, session: Session, user: User) -> User:
 
-    old_user = session.exec(select(User).where(User.username == user.username)).first()
-    if old_user:
-        old_user.password = user.password
-        session.add(old_user)
-        session.commit()
-        session.refresh(old_user)
-        return old_user
+    # delete all users
+    users = session.exec(select(User)).all()
+    for old_user in users:
+        session.delete(old_user)
 
     session.add(user)
     session.commit()
