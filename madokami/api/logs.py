@@ -7,9 +7,9 @@ logs_router = APIRouter(tags=["Log"])
 
 
 @logs_router.get("/log/all", response_model=LogResponse, dependencies=[Depends(get_client_id)])
-def _get_log_all():
+def _get_log_all(level: str = 'ALL', limit: int = 1000):
     try:
-        return LogResponse(data=message_storage_handler.get_messages())
+        return LogResponse(data=message_storage_handler.get_messages(level=level, limit=limit))
     except Exception as e:
         return LogResponse(message=f"Failed to load message: {e}", success=False)
 

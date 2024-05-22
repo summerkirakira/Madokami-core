@@ -2,6 +2,7 @@ import sys
 import inspect
 import logging
 from typing import TYPE_CHECKING
+import logging
 
 import loguru
 
@@ -19,21 +20,15 @@ logger: "Logger" = loguru.logger
 # logger.addHandler(default_handler)
 
 
-class MessageStorageHandler:
+class MessageStorageHandler(logging.Handler):
     def __init__(self):
         self.logs = []
+        super().__init__()
 
-    def write(self, message):
-        # 将日志消息添加到数组中
-        message_str = str(message)
-        if message_str.endswith("\n"):
-            message_str = message_str[:-1]
-        self.logs.append(message_str)
+    def emit(self, record: logging.LogRecord):
+        self.logs.append(record.getMessage())
 
-    def __call__(self, message):
-        self.write(message)
-
-    def get_messages(self, limit: int = 1000) -> list[str]:
+    def get_messages(self, limit: int = 1000, level: str = 'ALL') -> list[str]:
         if len(self.logs) > limit:
             return self.logs[-limit:]
         return self.logs

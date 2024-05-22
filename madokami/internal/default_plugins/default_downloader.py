@@ -1,4 +1,3 @@
-from typing import Optional, Callable
 from ..downloader import Downloader, Download, DownloadStatus
 from madokami import get_config
 import aria2p
@@ -11,9 +10,11 @@ import time
 from madokami.crud import get_download_history_by_link, add_download_history
 from madokami.models import DownloadHistory
 from madokami.db import engine, Session
+from madokami.drivers.hooks import download_hooks
+from typing import Any
 
 
-def _convert_aria2_download(aria2_download: Aria2Download, finished_callback: Optional[Callable[[Download], None]] = None) -> Download:
+def _convert_aria2_download(aria2_download: Aria2Download, finished_callback: Optional[Callable[[Download], Any]] = None) -> Download:
     status = DownloadStatus.DOWNLOADING
     error_message = None
     file = aria2_download.files[0]
@@ -110,15 +111,20 @@ class DefaultAria2Downloader(Downloader):
                 finished_download = _convert_aria2_download(download, self._callback_map.get(uid))
                 finished_download.id = uid
                 callback = self._callback_map.get(uid)
+                logger.success(
+                    f"Download {finished_download.name} is finished and file has been saved to {finished_download.target_path}")
+                callback_response = None
                 if callback:
-                    callback(finished_download)
+                    callback_response = callback(finished_download)
 
                 uri = self.uid_to_uri_map.get(uid)
                 self._add_download_history(uri, success=True, message=f"Download {uri} is finished and file has been saved to {finished_download.target_path}")
 
                 self.finished_downloads.append(finished_download)
+                for hook in download_hooks.get_after_download_hooks():
+                    hook(finished_download, callback_response)
                 uid_to_remove.append(uid)
-                logger.info(f"Download {finished_download.name} is finished and file has been saved to {finished_download.target_path}")
+
         for uid in uid_to_remove:
             self.downloads.pop(uid)
 
