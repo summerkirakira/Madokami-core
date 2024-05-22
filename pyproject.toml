@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "madokami"
-version = "0.1.4"
+version = "0.1.5"
 description = "A core library for madokami"
 authors = ["Hongpei Zheng <summerkirakira@gmail.com>"]
 readme = "README.md"
