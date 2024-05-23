@@ -15,6 +15,8 @@ from typing import Any
 
 
 def _convert_aria2_download(aria2_download: Aria2Download, finished_callback: Optional[Callable[[Download], Any]] = None) -> Download:
+    if isinstance(aria2_download, Download):
+        return aria2_download
     status = DownloadStatus.DOWNLOADING
     error_message = None
     file = aria2_download.files[0]
@@ -104,11 +106,18 @@ class DefaultAria2Downloader(Downloader):
             logger.error(f"Failed to remove all downloads: {e}")
             return False
 
+    def _check_finished(self, uid, download) -> bool:
+        if isinstance(download, Aria2Download):
+            return (download.is_complete or download.error_code == '13') and uid not in [finished_download.id for finished_download in self.finished_downloads]
+        else:
+            return download.status == DownloadStatus.COMPLETED and uid not in [finished_download.id for finished_download in self.finished_downloads]
+
     def check_finished(self):
         uid_to_remove = []
         for uid, download in self.downloads.items():
-            if (download.is_complete or download.error_code == '13') and uid not in [finished_download.id for finished_download in self.finished_downloads]:
-                finished_download = _convert_aria2_download(download, self._callback_map.get(uid))
+            if self._check_finished(uid, download):
+                is_aria2_download = isinstance(download, Aria2Download)
+                finished_download = _convert_aria2_download(download, self._callback_map.get(uid)) if is_aria2_download else download
                 finished_download.id = uid
                 callback = self._callback_map.get(uid)
                 logger.success(
@@ -189,6 +198,13 @@ class DefaultAria2Downloader(Downloader):
         converted_download.id = uid
         return converted_download
 
+    def add_raw(self, download: Download):
+        uid = download.id
+        self._callback_map[uid] = download.finished_callback
+        self.downloads[uid] = download
+        self.uid_to_uri_map[uid] = uid
+        return download
+
     @classmethod
     def _add_download_history(self, uri: str, success: bool = False, message: str = "Download added to queue"):
         with Session(engine) as session:
@@ -205,6 +221,9 @@ class DefaultAria2Downloader(Downloader):
     def _refresh_downloads(self):
         uid_to_remove = []
         for uid, download in self.downloads.items():
+            if not isinstance(download, Aria2Download):
+                print(id(download))
+                continue
             download.update()
             if download.is_removed:
                 uid_to_remove.append(uid)

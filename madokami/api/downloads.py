@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends
 from .models import InfoMessage, DownloadResponse, DownloadItem, DownloadData
 from madokami.drivers.deps import SessionDep, get_client_id
 from madokami.internal.downloader import Download
+from madokami.log import logger
 
 download_router = APIRouter(tags=["Download"])
 
@@ -29,6 +30,7 @@ def get_downloads():
         downloads = app.downloader.get_downloads().values()
         return DownloadResponse(data=[convert_download(download) for download in downloads])
     except Exception as e:
+        logger.error(f'Failed to retrieve downloads: {e}')
         return DownloadResponse(message=f'Failed to retrieve downloads: {e}', success=False)
 
 
